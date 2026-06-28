@@ -443,5 +443,38 @@ def api_sil(mid):
     conn.close()
     return jsonify({'ok': True})
 
+# ── API: Manuel Kayıt Ekle ───────────────────────────────────────────────────
+@app.route('/api/manuel-ekle', methods=['POST'])
+@login_required
+def api_manuel_ekle():
+    """Mevcut bir servisi panele kaydet (yeni oluşturmadan)."""
+    d = request.get_json()
+    conn = get_db()
+    try:
+        conn.execute("""
+            INSERT INTO musteriler
+            (otel_ad, kisa_ad, repo_adi, repo_url, site_url, sadmin_url,
+             superadmin_key, render_service_id, tur, durum,
+             oda_sayi, foy_baslangic, adisyon_baslangic, sehir, notlar)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        """, (
+            d['otel_ad'], d.get('kisa_ad',''), d.get('repo_adi',''),
+            d.get('repo_url',''), d.get('site_url',''),
+            d.get('site_url','') + '/sadmin',
+            d.get('superadmin_key',''), d.get('render_service_id',''),
+            d.get('tur','aktif'), d.get('durum','aktif'),
+            int(d.get('oda_sayi', 20)),
+            int(d.get('foy_baslangic', 1)),
+            int(d.get('adisyon_baslangic', 1)),
+            d.get('sehir',''), d.get('notlar','')
+        ))
+        conn.commit()
+        mid = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+        conn.close()
+        return jsonify({'ok': True, 'id': mid})
+    except sqlite3.IntegrityError as e:
+        conn.close()
+        return jsonify({'ok': False, 'error': str(e)})
+
 if __name__ == '__main__':
     app.run(debug=True, port=5050)

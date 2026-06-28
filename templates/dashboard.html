@@ -231,10 +231,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
       <div class="value" style="color:var(--yellow)">{{ demolar|length }}</div>
       <div class="sub">Deneme sürümü</div>
     </div>
-    <div class="stat-card">
-      <div class="label">Şablon</div>
-      <div class="value" style="color:var(--blue)">otel-template</div>
-      <div class="sub"><a href="https://github.com/bmkucuk/otel-template" target="_blank" style="color:var(--text3);font-size:11px">GitHub →</a></div>
+    <div class="stat-card" style="cursor:pointer;border-color:var(--border2)" onclick="openManuelModal()">
+      <div class="label">Mevcut Sistem</div>
+      <div class="value" style="color:var(--blue);font-size:16px">＋ Ekle</div>
+      <div class="sub">Var olan servisi panele al</div>
     </div>
   </div>
 
@@ -489,6 +489,77 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   </div>
 </div>
 
+<!-- Modal: Manuel Ekle -->
+<div class="modal-overlay" id="modal-manuel">
+  <div class="modal">
+    <h2>Mevcut Sistemi Panele Ekle</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Otel Adı *</label>
+        <input type="text" id="m-otel-ad" placeholder="Otel Leo & Cunda Villa">
+      </div>
+      <div class="form-group">
+        <label>Kısa Kod</label>
+        <input type="text" id="m-kisa-ad" placeholder="LEO">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Şehir</label>
+        <input type="text" id="m-sehir" placeholder="Ayvalık">
+      </div>
+      <div class="form-group">
+        <label>Oda Sayısı</label>
+        <input type="number" id="m-oda" value="20">
+      </div>
+    </div>
+    <div class="form-row single">
+      <div class="form-group">
+        <label>Site URL *</label>
+        <input type="text" id="m-site-url" placeholder="https://otel-yonetim-najm.onrender.com">
+      </div>
+    </div>
+    <div class="form-row single">
+      <div class="form-group">
+        <label>GitHub Repo Adı</label>
+        <input type="text" id="m-repo" placeholder="leo-cundavilla">
+      </div>
+    </div>
+    <div class="form-row single">
+      <div class="form-group">
+        <label>Render Service ID</label>
+        <input type="text" id="m-render-id" placeholder="srv-xxxxx">
+      </div>
+    </div>
+    <div class="form-row single">
+      <div class="form-group">
+        <label>SuperAdmin Key</label>
+        <input type="text" id="m-key" placeholder="Render env vardan al">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Föy Başlangıç</label>
+        <input type="number" id="m-foy" value="1">
+      </div>
+      <div class="form-group">
+        <label>Adisyon Başlangıç</label>
+        <input type="number" id="m-adisyon" value="1">
+      </div>
+    </div>
+    <div class="form-row single">
+      <div class="form-group">
+        <label>Not</label>
+        <input type="text" id="m-not" placeholder="Mevcut Leo & Cunda Villa sistemi">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-manuel')">İptal</button>
+      <button class="btn btn-primary" onclick="manuelEkle()">➕ Panele Ekle</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div id="toast"></div>
 
@@ -679,6 +750,35 @@ function toast(msg, tip='ok') {
   t.textContent = msg;
   t.className = 'show ' + tip;
   setTimeout(() => t.className = '', 3000);
+}
+
+function openManuelModal() {
+  document.getElementById('modal-manuel').classList.add('open');
+}
+
+async function manuelEkle() {
+  const data = {
+    otel_ad: document.getElementById('m-otel-ad').value.trim(),
+    kisa_ad: document.getElementById('m-kisa-ad').value.trim().toUpperCase(),
+    sehir: document.getElementById('m-sehir').value.trim(),
+    oda_sayi: parseInt(document.getElementById('m-oda').value) || 20,
+    site_url: document.getElementById('m-site-url').value.trim().replace(/\/$/,''),
+    repo_adi: document.getElementById('m-repo').value.trim(),
+    repo_url: 'https://github.com/bmkucuk/' + document.getElementById('m-repo').value.trim(),
+    render_service_id: document.getElementById('m-render-id').value.trim(),
+    superadmin_key: document.getElementById('m-key').value.trim(),
+    foy_baslangic: parseInt(document.getElementById('m-foy').value) || 1,
+    adisyon_baslangic: parseInt(document.getElementById('m-adisyon').value) || 1,
+    notlar: document.getElementById('m-not').value.trim(),
+    tur: 'aktif', durum: 'aktif',
+  };
+  if (!data.otel_ad || !data.site_url) { toast('Otel adı ve site URL zorunlu', 'err'); return; }
+  const r = await fetch('/api/manuel-ekle', {
+    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)
+  });
+  const d = await r.json();
+  if (d.ok) { toast('Sisteme eklendi ✓'); closeModal('modal-manuel'); location.reload(); }
+  else toast(d.error, 'err');
 }
 
 // Overlay kapat
