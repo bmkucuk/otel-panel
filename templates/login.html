@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Otel Panel — Giriş</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:#0b0f1a;color:#e2e8f0;
+  min-height:100vh;display:flex;align-items:center;justify-content:center}
+.card{background:#131929;border:1px solid #1e2d45;border-radius:16px;
+  padding:48px 40px;width:100%;max-width:380px;text-align:center}
+.logo{font-size:32px;margin-bottom:8px}
+h1{font-size:20px;font-weight:700;color:#f1f5f9;margin-bottom:4px}
+.sub{font-size:13px;color:#64748b;margin-bottom:32px}
+input{width:100%;background:#0b0f1a;border:1px solid #1e2d45;border-radius:10px;
+  padding:12px 16px;color:#f1f5f9;font-size:14px;outline:none;margin-bottom:12px}
+input:focus{border-color:#f5a623}
+button{width:100%;background:#f5a623;color:#0b0f1a;border:none;border-radius:10px;
+  padding:13px;font-size:14px;font-weight:700;cursor:pointer}
+button:hover{background:#e8961a}
+.hata{color:#f87171;font-size:13px;margin-bottom:12px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">🏨</div>
+  <h1>Otel Panel</h1>
+  <div class="sub">Yönetim Merkezi</div>
+  {% if hata %}<div class="hata">{{ hata }}</div>{% endif %}
+  <form method="POST">
+    <input type="password" name="sifre" placeholder="Şifre" autofocus required>
+    <button type="submit">Giriş Yap</button>
+  </form>
+</div>
+</body>
+</html>

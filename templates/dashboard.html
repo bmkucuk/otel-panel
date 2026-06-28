@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Otel Panel</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b0f1a; --surface:#131929; --surface2:#1a2236;
+  --border:#1e2d45; --border2:#253550;
+  --text:#e2e8f0; --text2:#94a3b8; --text3:#64748b;
+  --accent:#f5a623; --accent2:#f59e0b;
+  --green:#4ade80; --red:#f87171; --yellow:#fbbf24; --blue:#60a5fa;
+  --green-bg:rgba(74,222,128,.1); --red-bg:rgba(248,113,113,.1);
+  --yellow-bg:rgba(251,191,36,.1); --blue-bg:rgba(96,165,250,.1);
+}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* Layout */
+.layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:24px 0;
+  display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.main{padding:32px;overflow-y:auto}
+
+/* Sidebar */
+.brand{padding:0 20px 24px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.brand-icon{font-size:28px;margin-bottom:6px}
+.brand-name{font-size:13px;font-weight:700;color:var(--text);line-height:1.3}
+.brand-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.nav-section{padding:8px 20px 4px;font-size:10px;font-weight:600;
+  color:var(--text3);letter-spacing:.08em;text-transform:uppercase}
+.nav a{display:flex;align-items:center;gap:10px;padding:9px 20px;
+  font-size:13px;color:var(--text2);text-decoration:none;border-radius:0;
+  transition:all .15s;cursor:pointer;border:none;background:none;width:100%}
+.nav a:hover,.nav a.active{background:var(--surface2);color:var(--text)}
+.nav a .icon{width:16px;text-align:center;font-size:14px}
+.sidebar-footer{margin-top:auto;padding:16px 20px;border-top:1px solid var(--border)}
+.sidebar-footer a{font-size:12px;color:var(--text3);text-decoration:none}
+.sidebar-footer a:hover{color:var(--red)}
+
+/* Stats bar */
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+.stat-card .label{font-size:11px;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.stat-card .value{font-size:24px;font-weight:700;color:var(--text)}
+.stat-card .sub{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* Section */
+.section{margin-bottom:32px}
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.section-title{font-size:15px;font-weight:600;color:var(--text)}
+.section-count{font-size:11px;background:var(--surface2);color:var(--text2);
+  padding:2px 8px;border-radius:10px;font-weight:500}
+.section-header .spacer{flex:1}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;
+  border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;
+  border:1px solid transparent;text-decoration:none;transition:all .15s}
+.btn-primary{background:var(--accent);color:#0b0f1a;border-color:var(--accent)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-outline{background:transparent;color:var(--text2);border-color:var(--border2)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm{padding:4px 10px;font-size:11px;border-radius:6px}
+.btn-danger{background:rgba(248,113,113,.15);color:var(--red);border-color:rgba(248,113,113,.3)}
+.btn-danger:hover{background:rgba(248,113,113,.25)}
+.btn-success{background:rgba(74,222,128,.15);color:var(--green);border-color:rgba(74,222,128,.3)}
+.btn-success:hover{background:rgba(74,222,128,.25)}
+
+/* Cards grid */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+.musteri-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:18px 20px;transition:border-color .15s}
+.musteri-card:hover{border-color:var(--border2)}
+.card-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+.card-icon{width:40px;height:40px;border-radius:10px;
+  background:var(--surface2);display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0}
+.card-meta{flex:1;min-width:0}
+.card-name{font-size:14px;font-weight:600;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.card-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;
+  letter-spacing:.04em;flex-shrink:0}
+.badge-demo{background:var(--yellow-bg);color:var(--yellow)}
+.badge-aktif{background:var(--green-bg);color:var(--green)}
+.badge-askida{background:var(--red-bg);color:var(--red)}
+.badge-hazirlaniyor{background:var(--blue-bg);color:var(--blue)}
+.badge-hata{background:var(--red-bg);color:var(--red)}
+
+.card-links{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.card-link{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);
+  text-decoration:none;overflow:hidden}
+.card-link:hover{color:var(--accent)}
+.card-link-label{color:var(--text3);font-weight:500;width:40px;flex-shrink:0}
+.card-link-url{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.card-info{display:grid;grid-template-columns:1fr 1fr;gap:6px;
+  background:var(--surface2);border-radius:8px;padding:10px;margin-bottom:14px}
+.info-item .label{font-size:10px;color:var(--text3);font-weight:500}
+.info-item .value{font-size:12px;color:var(--text);margin-top:1px;font-weight:500}
+
+.card-key{background:var(--surface2);border-radius:8px;padding:8px 10px;
+  margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card-key .label{font-size:10px;color:var(--text3);width:80px;flex-shrink:0}
+.card-key .key{font-size:11px;color:var(--accent);font-family:monospace;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.card-key .copy-btn{font-size:10px;color:var(--text3);cursor:pointer;
+  padding:2px 6px;border-radius:4px;background:var(--border);border:none;flex-shrink:0}
+.card-key .copy-btn:hover{color:var(--text)}
+
+.card-actions{display:flex;gap:6px;flex-wrap:wrap}
+
+/* Not */
+.card-not{font-size:11px;color:var(--text2);font-style:italic;
+  margin-bottom:10px;padding:6px 10px;background:var(--surface2);
+  border-radius:6px;border-left:2px solid var(--border2)}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);
+  z-index:100;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:28px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+.modal h2{font-size:17px;font-weight:700;color:var(--text);margin-bottom:20px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-row.single{grid-template-columns:1fr}
+.form-group label{display:block;font-size:11px;font-weight:600;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.form-group input,.form-group select{width:100%;background:var(--surface2);
+  border:1px solid var(--border);border-radius:8px;padding:9px 12px;
+  color:var(--text);font-size:13px;outline:none}
+.form-group input:focus,.form-group select:focus{border-color:var(--accent)}
+.form-section{font-size:11px;font-weight:600;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.06em;margin:16px 0 8px;
+  padding-top:16px;border-top:1px solid var(--border)}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+.tur-tabs{display:flex;gap:8px;margin-bottom:16px}
+.tur-tab{flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);
+  background:transparent;cursor:pointer;text-align:center;transition:all .15s;color:var(--text2)}
+.tur-tab.active{border-color:var(--accent);background:rgba(245,166,35,.1);color:var(--accent)}
+.tur-tab .tab-icon{font-size:18px;display:block;margin-bottom:4px}
+.tur-tab .tab-label{font-size:12px;font-weight:600}
+.tur-tab .tab-sub{font-size:10px;color:var(--text3);margin-top:2px}
+
+/* İlerleme */
+.progress-modal .step{display:flex;align-items:center;gap:12px;padding:10px 0;
+  border-bottom:1px solid var(--border)}
+.progress-modal .step:last-child{border:none}
+.step-icon{width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.step-icon.bekliyor{background:var(--surface2);color:var(--text3)}
+.step-icon.devam{background:var(--blue-bg);color:var(--blue);animation:spin 1s linear infinite}
+.step-icon.tamam{background:var(--green-bg);color:var(--green)}
+.step-icon.hata{background:var(--red-bg);color:var(--red)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.step-text{font-size:13px;color:var(--text2)}
+.step-text strong{color:var(--text);display:block;margin-bottom:2px}
+
+/* Empty */
+.empty{text-align:center;padding:48px 24px;color:var(--text3)}
+.empty .icon{font-size:40px;margin-bottom:12px}
+.empty p{font-size:13px}
+
+/* Toast */
+#toast{position:fixed;bottom:24px;right:24px;background:#131929;border:1px solid var(--border);
+  border-radius:10px;padding:12px 18px;font-size:13px;color:var(--text);
+  z-index:999;transform:translateY(80px);transition:transform .25s;max-width:320px}
+#toast.show{transform:translateY(0)}
+#toast.ok{border-color:rgba(74,222,128,.4);color:var(--green)}
+#toast.err{border-color:rgba(248,113,113,.4);color:var(--red)}
+
+/* Durum spinner */
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--border2);
+  border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-icon">🏨</div>
+    <div class="brand-name">Otel Panel</div>
+    <div class="brand-sub">Yönetim Merkezi</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Genel</div>
+    <a href="#" class="active" onclick="goster('anasayfa')">
+      <span class="icon">🏠</span> Özet
+    </a>
+    <div class="nav-section">Müşteriler</div>
+    <a href="#" onclick="goster('demolar')">
+      <span class="icon">🧪</span> Demolar
+      <span style="margin-left:auto;font-size:10px;background:var(--yellow-bg);color:var(--yellow);padding:1px 6px;border-radius:8px">
+        {{ demolar|length }}
+      </span>
+    </a>
+    <a href="#" onclick="goster('aktifler')">
+      <span class="icon">✅</span> Aktif Müşteriler
+      <span style="margin-left:auto;font-size:10px;background:var(--green-bg);color:var(--green);padding:1px 6px;border-radius:8px">
+        {{ aktifler|length }}
+      </span>
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="/logout">🚪 Çıkış Yap</a>
+  </div>
+</aside>
+
+<!-- Main -->
+<main class="main">
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="label">Toplam</div>
+      <div class="value">{{ demolar|length + aktifler|length }}</div>
+      <div class="sub">Tüm müşteriler</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Aktif</div>
+      <div class="value" style="color:var(--green)">{{ aktifler|length }}</div>
+      <div class="sub">Canlı sistem</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Demo</div>
+      <div class="value" style="color:var(--yellow)">{{ demolar|length }}</div>
+      <div class="sub">Deneme sürümü</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Şablon</div>
+      <div class="value" style="color:var(--blue)">otel-template</div>
+      <div class="sub"><a href="https://github.com/bmkucuk/otel-template" target="_blank" style="color:var(--text3);font-size:11px">GitHub →</a></div>
+    </div>
+  </div>
+
+  <!-- Demo Bölümü -->
+  <div class="section" id="sec-demolar">
+    <div class="section-header">
+      <div class="section-title">🧪 Demolar</div>
+      <div class="section-count">{{ demolar|length }}</div>
+      <div class="spacer"></div>
+      <button class="btn btn-primary" onclick="openYeniModal('demo')">＋ Yeni Demo</button>
+    </div>
+    {% if demolar %}
+    <div class="cards-grid">
+      {% for m in demolar %}
+      <div class="musteri-card" id="card-{{ m.id }}">
+        <div class="card-header">
+          <div class="card-icon">🧪</div>
+          <div class="card-meta">
+            <div class="card-name">{{ m.otel_ad }}</div>
+            <div class="card-sub">{{ m.kisa_ad }} · {{ m.sehir or '—' }}</div>
+          </div>
+          <span class="card-badge badge-{{ m.durum }}">{{ m.durum|upper }}</span>
+        </div>
+        {% if m.notlar %}<div class="card-not">{{ m.notlar }}</div>{% endif %}
+        <div class="card-links">
+          {% if m.site_url %}
+          <a class="card-link" href="{{ m.site_url }}" target="_blank">
+            <span class="card-link-label">Site</span>
+            <span class="card-link-url">{{ m.site_url }}</span>
+          </a>
+          <a class="card-link" href="{{ m.sadmin_url }}" target="_blank">
+            <span class="card-link-label">Admin</span>
+            <span class="card-link-url">{{ m.sadmin_url }}</span>
+          </a>
+          {% else %}
+          <span style="font-size:12px;color:var(--text3)">
+            <span class="spinner"></span> Hazırlanıyor...
+          </span>
+          {% endif %}
+        </div>
+        <div class="card-info">
+          <div class="info-item"><div class="label">Oda</div><div class="value">{{ m.oda_sayi }}</div></div>
+          <div class="info-item"><div class="label">Föy Başlangıç</div><div class="value">{{ m.foy_baslangic }}</div></div>
+          <div class="info-item"><div class="label">Adisyon Başl.</div><div class="value">{{ m.adisyon_baslangic }}</div></div>
+          <div class="info-item"><div class="label">Oluşturuldu</div><div class="value">{{ m.olusturma_tarihi[:10] }}</div></div>
+        </div>
+        {% if m.superadmin_key %}
+        <div class="card-key">
+          <span class="label">SADMIN KEY</span>
+          <span class="key">{{ m.superadmin_key }}</span>
+          <button class="copy-btn" onclick="kopyala('{{ m.superadmin_key }}')">Kopyala</button>
+        </div>
+        {% endif %}
+        <div class="card-actions">
+          {% if m.durum == 'demo' %}
+          <button class="btn btn-sm btn-success" onclick="turDegistir({{ m.id }}, 'aktif')">↑ Aktife Al</button>
+          {% endif %}
+          {% if m.durum == 'askida' %}
+          <button class="btn btn-sm btn-success" onclick="aktifYap({{ m.id }})">▶ Devam Et</button>
+          {% else %}
+          <button class="btn btn-sm btn-outline" onclick="askiyaAl({{ m.id }})">⏸ Askıya Al</button>
+          {% endif %}
+          <button class="btn btn-sm btn-outline" onclick="notEkle({{ m.id }}, '{{ (m.notlar or '')|replace("'", "\\'") }}')">✏ Not</button>
+          <button class="btn btn-sm btn-danger" onclick="sil({{ m.id }}, '{{ m.otel_ad }}')">🗑 Sil</button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty"><div class="icon">🧪</div><p>Henüz demo yok.<br>Yukarıdan yeni demo oluşturabilirsin.</p></div>
+    {% endif %}
+  </div>
+
+  <!-- Aktif Müşteriler -->
+  <div class="section" id="sec-aktifler">
+    <div class="section-header">
+      <div class="section-title">✅ Aktif Müşteriler</div>
+      <div class="section-count">{{ aktifler|length }}</div>
+      <div class="spacer"></div>
+      <button class="btn btn-primary" onclick="openYeniModal('aktif')">＋ Yeni Müşteri</button>
+    </div>
+    {% if aktifler %}
+    <div class="cards-grid">
+      {% for m in aktifler %}
+      <div class="musteri-card" id="card-{{ m.id }}">
+        <div class="card-header">
+          <div class="card-icon">🏨</div>
+          <div class="card-meta">
+            <div class="card-name">{{ m.otel_ad }}</div>
+            <div class="card-sub">{{ m.kisa_ad }} · {{ m.sehir or '—' }}</div>
+          </div>
+          <span class="card-badge badge-{{ m.durum }}">{{ m.durum|upper }}</span>
+        </div>
+        {% if m.notlar %}<div class="card-not">{{ m.notlar }}</div>{% endif %}
+        <div class="card-links">
+          {% if m.site_url %}
+          <a class="card-link" href="{{ m.site_url }}" target="_blank">
+            <span class="card-link-label">Site</span>
+            <span class="card-link-url">{{ m.site_url }}</span>
+          </a>
+          <a class="card-link" href="{{ m.sadmin_url }}" target="_blank">
+            <span class="card-link-label">Admin</span>
+            <span class="card-link-url">{{ m.sadmin_url }}</span>
+          </a>
+          <a class="card-link" href="https://github.com/bmkucuk/{{ m.repo_adi }}" target="_blank">
+            <span class="card-link-label">Repo</span>
+            <span class="card-link-url">github.com/bmkucuk/{{ m.repo_adi }}</span>
+          </a>
+          {% else %}
+          <span style="font-size:12px;color:var(--text3)">
+            <span class="spinner"></span> Hazırlanıyor...
+          </span>
+          {% endif %}
+        </div>
+        <div class="card-info">
+          <div class="info-item"><div class="label">Oda</div><div class="value">{{ m.oda_sayi }}</div></div>
+          <div class="info-item"><div class="label">Föy Başlangıç</div><div class="value">{{ m.foy_baslangic }}</div></div>
+          <div class="info-item"><div class="label">Adisyon Başl.</div><div class="value">{{ m.adisyon_baslangic }}</div></div>
+          <div class="info-item"><div class="label">Oluşturuldu</div><div class="value">{{ m.olusturma_tarihi[:10] }}</div></div>
+        </div>
+        {% if m.superadmin_key %}
+        <div class="card-key">
+          <span class="label">SADMIN KEY</span>
+          <span class="key">{{ m.superadmin_key }}</span>
+          <button class="copy-btn" onclick="kopyala('{{ m.superadmin_key }}')">Kopyala</button>
+        </div>
+        {% endif %}
+        <div class="card-actions">
+          {% if m.durum == 'askida' %}
+          <button class="btn btn-sm btn-success" onclick="aktifYap({{ m.id }})">▶ Devam Et</button>
+          {% else %}
+          <button class="btn btn-sm btn-outline" onclick="askiyaAl({{ m.id }})">⏸ Askıya Al</button>
+          {% endif %}
+          <button class="btn btn-sm btn-outline" onclick="notEkle({{ m.id }}, '{{ (m.notlar or '')|replace("'", "\\'") }}')">✏ Not</button>
+          <button class="btn btn-sm btn-danger" onclick="sil({{ m.id }}, '{{ m.otel_ad }}')">🗑 Sil</button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty"><div class="icon">🏨</div><p>Henüz aktif müşteri yok.<br>Yukarıdan yeni müşteri ekleyebilirsin.</p></div>
+    {% endif %}
+  </div>
+
+</main>
+</div>
+
+<!-- Modal: Yeni Oluştur -->
+<div class="modal-overlay" id="modal-yeni">
+  <div class="modal">
+    <h2 id="modal-baslik">Yeni Demo Oluştur</h2>
+
+    <div class="tur-tabs">
+      <button class="tur-tab active" id="tab-demo" onclick="setTur('demo')">
+        <span class="tab-icon">🧪</span>
+        <span class="tab-label">Demo</span>
+        <span class="tab-sub">3 günlük deneme</span>
+      </button>
+      <button class="tur-tab" id="tab-aktif" onclick="setTur('aktif')">
+        <span class="tab-icon">✅</span>
+        <span class="tab-label">Aktif Müşteri</span>
+        <span class="tab-sub">Lisanslı, sınırsız</span>
+      </button>
+    </div>
+    <input type="hidden" id="f-tur" value="demo">
+
+    <div class="form-section">Otel Bilgileri</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Otel Adı *</label>
+        <input type="text" id="f-otel-ad" placeholder="Örn: Park Otel" oninput="repoOner()">
+      </div>
+      <div class="form-group">
+        <label>Kısa Kod *</label>
+        <input type="text" id="f-kisa-ad" placeholder="PARK" maxlength="6" style="text-transform:uppercase">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Şehir</label>
+        <input type="text" id="f-sehir" placeholder="İstanbul">
+      </div>
+      <div class="form-group">
+        <label>Oda Sayısı</label>
+        <input type="number" id="f-oda" value="20" min="1">
+      </div>
+    </div>
+    <div class="form-row single">
+      <div class="form-group">
+        <label>GitHub Repo Adı</label>
+        <input type="text" id="f-repo" placeholder="park-otel-yonetim">
+      </div>
+    </div>
+
+    <div class="form-section">Numaralandırma</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Föy (Rezervasyon) Başlangıç No</label>
+        <input type="number" id="f-foy" value="1" min="1">
+      </div>
+      <div class="form-group">
+        <label>Adisyon Başlangıç No</label>
+        <input type="number" id="f-adisyon" value="1" min="1">
+      </div>
+    </div>
+
+    <div class="form-section">Mail (Yedek)</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Yedek Mail Alıcısı</label>
+        <input type="email" id="f-mail" placeholder="musteri@gmail.com">
+      </div>
+      <div class="form-group">
+        <label>SuperAdmin Key (boş=otomatik)</label>
+        <input type="text" id="f-key" placeholder="Otomatik üretilir">
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-yeni')">İptal</button>
+      <button class="btn btn-primary" onclick="olustur()">🚀 Oluştur</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: İlerleme -->
+<div class="modal-overlay" id="modal-progress">
+  <div class="modal progress-modal">
+    <h2 id="progress-baslik">Hazırlanıyor...</h2>
+    <div id="progress-steps">
+      <div class="step" id="step-github">
+        <div class="step-icon bekliyor" id="icon-github">⏳</div>
+        <div class="step-text"><strong>GitHub Repo</strong><span id="text-github">Bekleniyor</span></div>
+      </div>
+      <div class="step" id="step-render">
+        <div class="step-icon bekliyor" id="icon-render">⏳</div>
+        <div class="step-text"><strong>Render Deploy</strong><span id="text-render">Bekleniyor</span></div>
+      </div>
+      <div class="step" id="step-config">
+        <div class="step-icon bekliyor" id="icon-config">⏳</div>
+        <div class="step-text"><strong>Config Ayarları</strong><span id="text-config">Bekleniyor</span></div>
+      </div>
+      <div class="step" id="step-done">
+        <div class="step-icon bekliyor" id="icon-done">⏳</div>
+        <div class="step-text"><strong>Tamamlandı</strong><span id="text-done">Bekleniyor</span></div>
+      </div>
+    </div>
+    <div id="progress-result" style="display:none;margin-top:16px"></div>
+    <div class="modal-footer" id="progress-footer" style="display:none">
+      <button class="btn btn-primary" onclick="location.reload()">Tamam</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+let secilenTur = 'demo';
+
+function setTur(tur) {
+  secilenTur = tur;
+  document.getElementById('f-tur').value = tur;
+  document.getElementById('tab-demo').classList.toggle('active', tur==='demo');
+  document.getElementById('tab-aktif').classList.toggle('active', tur==='aktif');
+  document.getElementById('modal-baslik').textContent =
+    tur === 'demo' ? 'Yeni Demo Oluştur' : 'Yeni Aktif Müşteri Ekle';
+}
+
+function openYeniModal(tur) {
+  setTur(tur);
+  document.getElementById('modal-yeni').classList.add('open');
+  document.getElementById('f-otel-ad').focus();
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function repoOner() {
+  const ad = document.getElementById('f-otel-ad').value;
+  const repo = ad.toLowerCase()
+    .replace(/ı/g,'i').replace(/ş/g,'s').replace(/ğ/g,'g')
+    .replace(/ü/g,'u').replace(/ö/g,'o').replace(/ç/g,'c')
+    .replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'')
+    + '-yonetim';
+  document.getElementById('f-repo').value = repo;
+  // Kısa kod öner
+  const kisalt = ad.replace(/[^a-zA-ZğüşıöçĞÜŞİÖÇ\s]/g,'')
+    .split(/\s+/).map(w=>w[0]||'').join('').toUpperCase().slice(0,4);
+  if (!document.getElementById('f-kisa-ad').value) {
+    document.getElementById('f-kisa-ad').value = kisalt;
+  }
+}
+
+async function olustur() {
+  const otelAd = document.getElementById('f-otel-ad').value.trim();
+  const kisaAd = document.getElementById('f-kisa-ad').value.trim().toUpperCase();
+  if (!otelAd || !kisaAd) { toast('Otel adı ve kısa kod zorunlu', 'err'); return; }
+
+  const data = {
+    tur: secilenTur,
+    otel_ad: otelAd,
+    kisa_ad: kisaAd,
+    sehir: document.getElementById('f-sehir').value.trim(),
+    oda_sayi: parseInt(document.getElementById('f-oda').value) || 20,
+    repo_adi: document.getElementById('f-repo').value.trim(),
+    foy_baslangic: parseInt(document.getElementById('f-foy').value) || 1,
+    adisyon_baslangic: parseInt(document.getElementById('f-adisyon').value) || 1,
+    yedek_mail: document.getElementById('f-mail').value.trim(),
+    superadmin_key: document.getElementById('f-key').value.trim(),
+  };
+
+  closeModal('modal-yeni');
+  document.getElementById('progress-baslik').textContent =
+    data.tur === 'demo' ? `Demo Oluşturuluyor: ${otelAd}` : `Müşteri Ekleniyor: ${otelAd}`;
+  document.getElementById('progress-result').style.display = 'none';
+  document.getElementById('progress-footer').style.display = 'none';
+  ['github','render','config','done'].forEach(s => {
+    document.getElementById(`icon-${s}`).className = 'step-icon bekliyor';
+    document.getElementById(`icon-${s}`).textContent = '⏳';
+    document.getElementById(`text-${s}`).textContent = 'Bekleniyor';
+  });
+  document.getElementById('modal-progress').classList.add('open');
+
+  const r = await fetch('/api/olustur', {
+    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)
+  });
+  const res = await r.json();
+  if (!res.ok) { toast(res.error, 'err'); return; }
+
+  // İlerleme takip
+  const mid = res.musteri_id;
+  pollDurum(mid);
+}
+
+const ADIM_MAP = {
+  'github_repo'      : 'github',
+  'render_deploy'    : 'render',
+  'config_guncelle'  : 'config',
+  'tamamlandi'       : 'done',
+};
+
+async function pollDurum(mid) {
+  for (let i = 0; i < 60; i++) {
+    await new Promise(r => setTimeout(r, 5000));
+    const r = await fetch(`/api/durum/${mid}`);
+    const d = await r.json();
+    if (!d.ok) continue;
+
+    const m = d.musteri;
+    const loglar = d.loglar;
+
+    // Adımları güncelle
+    loglar.forEach(l => {
+      const adim = ADIM_MAP[l.islem];
+      if (!adim) return;
+      const icon = document.getElementById(`icon-${adim}`);
+      const text = document.getElementById(`text-${adim}`);
+      if (l.sonuc === 'basliyor') {
+        icon.className = 'step-icon devam'; icon.textContent = '↻';
+        text.textContent = 'Çalışıyor...';
+      } else if (l.sonuc === 'tamam' || l.sonuc === 'ok' || l.sonuc === 'live') {
+        icon.className = 'step-icon tamam'; icon.textContent = '✓';
+        text.textContent = l.detay || 'Tamamlandı';
+      } else if (l.sonuc === 'hata') {
+        icon.className = 'step-icon hata'; icon.textContent = '✗';
+        text.textContent = l.detay || 'Hata oluştu';
+      }
+    });
+
+    if (m.durum === 'aktif' || m.durum === 'demo') {
+      // Tamamlandı
+      const res = document.getElementById('progress-result');
+      res.style.display = 'block';
+      res.innerHTML = `
+        <div style="background:var(--green-bg);border:1px solid rgba(74,222,128,.3);border-radius:10px;padding:14px">
+          <div style="font-size:13px;font-weight:600;color:var(--green);margin-bottom:8px">✅ Hazır!</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.8">
+            🌐 <a href="${m.site_url}" target="_blank" style="color:var(--accent)">${m.site_url}</a><br>
+            🔧 <a href="${m.sadmin_url}" target="_blank" style="color:var(--text2)">${m.sadmin_url}</a><br>
+            🔑 <span style="font-family:monospace;color:var(--accent)">${m.superadmin_key}</span>
+          </div>
+        </div>`;
+      document.getElementById('progress-footer').style.display = 'flex';
+      return;
+    }
+    if (m.durum === 'hata') {
+      document.getElementById('progress-result').style.display = 'block';
+      document.getElementById('progress-result').innerHTML =
+        '<div style="color:var(--red);font-size:13px">❌ Bir hata oluştu. Loglara bakın.</div>';
+      document.getElementById('progress-footer').style.display = 'flex';
+      return;
+    }
+  }
+}
+
+async function askiyaAl(mid) {
+  if (!confirm('Askıya almak istediğinize emin misiniz?')) return;
+  const r = await fetch(`/api/musteri/${mid}/askiya`, {method:'POST'});
+  if ((await r.json()).ok) { toast('Askıya alındı'); location.reload(); }
+}
+
+async function aktifYap(mid) {
+  const r = await fetch(`/api/musteri/${mid}/aktif`, {method:'POST'});
+  if ((await r.json()).ok) { toast('Aktif edildi ✓'); location.reload(); }
+}
+
+async function turDegistir(mid, tur) {
+  if (!confirm(`Bu müşteriyi "${tur}" olarak güncellemek istiyor musunuz?`)) return;
+  const r = await fetch(`/api/musteri/${mid}/tur`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({tur})
+  });
+  const d = await r.json();
+  if (d.ok) { toast('Güncellendi ✓'); location.reload(); }
+  else toast(d.error, 'err');
+}
+
+async function notEkle(mid, mevcutNot) {
+  const yeni = prompt('Not:', mevcutNot);
+  if (yeni === null) return;
+  const r = await fetch(`/api/musteri/${mid}/not`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({not: yeni})
+  });
+  if ((await r.json()).ok) { toast('Not kaydedildi ✓'); location.reload(); }
+}
+
+async function sil(mid, ad) {
+  if (!confirm(`"${ad}" silinecek.\n\nGitHub repo ve Render servisi de silinecek.\n\nEmin misiniz?`)) return;
+  const r = await fetch(`/api/musteri/${mid}/sil`, {method:'POST'});
+  if ((await r.json()).ok) { toast('Silindi ✓'); location.reload(); }
+}
+
+function kopyala(text) {
+  navigator.clipboard.writeText(text).then(() => toast('Kopyalandı ✓'));
+}
+
+function toast(msg, tip='ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + tip;
+  setTimeout(() => t.className = '', 3000);
+}
+
+// Overlay kapat
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => {
+    if (e.target === el && el.id !== 'modal-progress') el.classList.remove('open');
+  });
+});
+</script>
+</body>
+</html>
